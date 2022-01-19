@@ -1,0 +1,95 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+#tp3_compte rendu
+# Lisez le contenu de dataset « Titanic » dans une variable nommée df
+import pandas as pd
+df =pd.read_csv("titanic_original.csv",sep=",",header=0)
+df.Fare.describe()    
+faremoy=df.fillna(df.Fare.mean()) #une seule ligne qui contient nan
+df=df.fillna(df.Fare.mean())
+def discretFare(ligne):
+    if ligne["Fare"]<100:
+        return "bas"
+    elif ligne["Fare"]>=100 and ligne["Fare"]<350:
+        return "moyen"
+    else:
+        return "eleve"
+df["Fare"]=df.apply(discretFare,axis=1)
+##########Question4
+####discretisation Survie
+def discretSurvie(ligne):
+    if ligne["Survie"]==0:
+        return "decede"
+    else:
+        return "survivant"
+df["Survie"]=df.apply(discretSurvie,axis=1)
+
+##ou bien 2eme methode sans fonction
+df["Survie"].loc[df["Survie"]==0]##selectionne les ligne ==0
+df["Survie"].loc[df["Survie"]==0]="decede"
+df["Survie"].loc[df["Survie"]==1]="survivant"
+####discretisation Chclasse
+def discretChclasse(ligne):
+    if ligne["Chclasse"]==1:
+        return "premiere_classe"
+    elif ligne["Chclasse"]==2:
+        return "deuxieme_classe"
+    else:
+        return "troisieme_classe"
+df["Chclasse"]=df.apply(discretChclasse,axis=1)
+##2eme methode
+df["Chclasse"]=df["Chclasse"].replace(1,"premiere_classe")
+df["Chclasse"]=df["Chclasse"].replace(2,"deuxieme_classe")
+df["Chclasse"]=df["Chclasse"].replace(3,"troisieme_classe")
+####discretisation Parch
+def discretParch(ligne):
+    if ligne["Parch"]==0:
+        return "seul"
+    else:
+        return "en_famille"
+df["Parch"]=df.apply(discretParch,axis=1)
+####discretisation Sibsp
+def discretSibsp(ligne):
+    if ligne["Sibsp"]==0:
+        return "solitaire"
+    else:
+        return "en_groupe"
+df["Sibsp"]=df.apply(discretSibsp,axis=1)
+
+df[df.Sibsp=="solitaire"]
+
+###################  compte rendu  ##############
+
+####################################2eme partie########################################
+from apyori import apriori
+from utils import df_to_trans
+transactions=[]
+for i in range (0,1309):
+    transactions.append([str(df.values[i,j] for j in range(0,8))])
+def run(trans, supp, conf, lift, maxlen = 10, prefix_sep = '='):
+   
+  results = list(apriori(trans, 
+                         min_support = supp, 
+                         min_confidence = conf,
+                         min_lift = lift,
+                         max_length = maxlen))
+  if len(results) > 0:
+      rows = []                         
+      for i in results :
+          for j in i.ordered_statistics:
+              s = pd.Series(j)
+              s[4] = i.support
+              rows.append(s)    
+      results = pd.DataFrame(rows)
+      results.columns = ['lhs', 'rhs', 'confidence', 'lift', 'support']       
+      results = results[ ['lhs', 'rhs', 'support', 'confidence', 'lift' ] ]       
+      results['lhs'] = [list(results['lhs'][i]) for i in range(len(results))]     
+      results['rhs'] = [list(results['rhs'][i])[0] for i in range(len(results))]  
+  return results
+rules=run(transactions,supp=0.06,conf=0.75,lift=1.1,maxlen=10)
+rules
+rules = apriori(transactions, min_support=0.06, min_confidence=0.75, min_lift=1.1, min_length=10)
+rules
+list(rules)

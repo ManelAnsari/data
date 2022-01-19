@@ -1,0 +1,23 @@
+cf=Df.drop(labels=["Parch","Embarked"],axis=1)
+Df["Survie"]
+Df.Survie
+Df[["Survie","Gender"]]
+Df.head()
+Df[0:5]
+Df.iloc[0:10,3:5]
+Df.loc[0:10,["Age","Sibsp"]]
+Df.loc[Df['Survie']==1]
+
+'''
+representation monodimentionnelle :histogramme dun attribut'''
+import matplotlib.pyplot as plt
+plt.hist(Df["Age"],density=True, color="lightblue")
+plt.ylabel("frequence")
+plt.xlabel("Age")
+plt.show()
+
+
+plt.hist(Df["Gender"])
+plt.title("repartition des genders de passagers")
+plt.show()
+100*sum(Df['Gender']=="male") / len(Df['Gender'])
